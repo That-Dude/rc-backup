@@ -4,7 +4,7 @@
 set -u          # no unset variabled
 set -e          # exit on any command failure
 set -o pipefail # exit if any command in a pipe fails
-trap 'echo "Error in function $FUNCNAME at line $LINENO"; exit 1' ERR
+#trap 'echo "Error in function $FUNCNAME at line $LINENO"; exit 1' ERR
 
 # *** User variables here ***
 _target_bucket="s3backup/rcuser1-bucket/"
@@ -38,7 +38,7 @@ _loggit() {
     _icon_info='\xf0\x9f\x9a\x80'
     _icon_error='\xf0\x9f\x9a\xa8'
     _icon_warning='\xF0\x9F\x9A\xA7'
-    #_icon_delivery_truck='\xf0\x9f\x9a\x9a'
+    _icon_delivery_truck='\xf0\x9f\x9a\x9a'
 
     # colours
     _red="$(tput -Txterm setaf 1)"
@@ -65,11 +65,11 @@ _loggit() {
             echo -e "\n ${_icon_warning} $_current_date_time - ${_yellow}$1${_no_color} \n"
             ;;
         -green | -info)
-            echo -e "\n ${_icon_info} $_current_date_time - ${_green}$1${_no_color}"
+            echo -e "\n ${_icon_info} $_current_date_time - $1"
             ;;
 
         -bold)
-            echo -e "\n    $_current_date_time - ${_bold}$1${_no_color}"
+            echo -e "\n ${_icon_delivery_truck} $_current_date_time - ${_bold}$1${_no_color}"
             ;;
 
         -sameline)
@@ -152,7 +152,7 @@ else
 fi
 
 hash wp 2>/dev/null || {
-    echo >&2 "I require wp (Word-press CLI) but it's not installed.  Aborting."
+    echo >&2 "Word-press CLI required but it's not installed.  Aborting."
     exit 1
 }
 
@@ -167,8 +167,8 @@ if [ "${_script_dir}" != "/root/rc-backup" ]; then
 fi
 
 mkdir -p "${_bin}"
-
 mkdir -p "${_local_backup_dir}"
+mkdir -p "${_local_backup_dir}/${_month}"
 
 # Check RunCloud user directory exisits
 if [ ! -d "${_runcloud_user_dir}" ]; then
@@ -213,7 +213,7 @@ done
 ###############################################################################
 
 for _user_directory in "${_runcloud_users[@]}"; do
-    _loggit "Processing user folder: ${_blue} ${_user_directory}${_apps_root_dir} ${_no_color}" -bold
+    _loggit "Processing user folder: ${_green}${_user_directory}${_apps_root_dir}${_no_color}" -info
 
     # Check if user folder is empty (ie no runcloud apps for this user)
     _subdircount=$(find "${_user_directory}${_apps_root_dir}" -maxdepth 1 -type d | wc -l)
@@ -227,7 +227,7 @@ for _user_directory in "${_runcloud_users[@]}"; do
     # start the loop
     for _app in "${_applist[@]}"; do
         _app_name=$(basename "${_app}")
-        _loggit "backing up runcloud app: ${_app_name}" -info
+        _loggit "backing up runcloud app: ${_green}${_app_name}${_no_color}"
 
         _user=$(basename "${_user_directory}")
 
@@ -236,39 +236,36 @@ for _user_directory in "${_runcloud_users[@]}"; do
         if [ -f "${_app}wp-config.php" ]; then
 
             # backup wordpress
-            _loggit "This is a Wordpress APP - dumping database" -blue
+            _loggit "This is a Wordpress APP"
 
             # get the siteurl
-            _loggit "Dumping siteURL..."
             _siteurl=$(sudo -u "${_user}" -i -- wp --path="${_app}" option get siteurl)
             _siteurl=${_siteurl#*//} #removes stuff upto // from begining
-            _loggit "The site URL is: ${_siteurl}"
+            _loggit "The site URL is: ${_green}${_siteurl}${_no_color}"
 
             # dump WP database
-            _loggit "Backup the Wordpress database using WP-CLI"
+            _loggit "Export the Wordpress database to: ${_green}${_app}/${_siteurl}.sql${_no_color}"
             sudo -u "${_user}" -i -- wp --path="${_app}" --quiet db export "${_app}/${_siteurl}.sql"
         else
             # backup static site
-            _loggit "This is a static APP with no DB" -blue
+            _loggit "This is a static website with no database to dump" -blue
         fi
 
         # compress the APP files and store in temp folder
-        _loggit "Backup the site files..."
-
         cd "${_user_directory}${_apps_root_dir}/${_app_name}"
+        _full_backup_filename="${_local_backup_dir}/${_month}/${_app_name}/${_app_name}_${_month}_full.7z"
 
-        _full_backup_filename="${_local_backup_dir}/${_app_name}_${_month}_full.7z"
-
-        if [ ! -f "${_full_backup_filename}" ]; then
-            _loggit "Creating monthly backup..."
+        if [ ! -f "${_full_backup_filename}" ]; then #no full backup for this month
+            _loggit "Creating FULL backup to: ${_green}${_full_backup_filename}${_no_color}"
             "${_bin}"/7zz a "${_full_backup_filename}" . -x@"${_exclude_files_list}"
-            _loggit "Copying ${_full_backup_filename} to S3"
+            _loggit "Copying ${_green}${_full_backup_filename}${_no_color} to S3" -bold
             # copy it to s3
-            "${_bin}"/mc -no-color cp "${_full_backup_filename}" "${_target_bucket}"
+            "${_bin}"/mc -no-color cp "${_full_backup_filename}" "${_target_bucket}/${_app_name}/"
 
         else
-            _loggit "Creating nightly backup..."
-            _differential_backup_filename="${_local_backup_dir}/${_app_name}_${_today}_differential.7z"
+            _differential_backup_filename="${_local_backup_dir}/${_month}/${_app_name}/${_app_name}_${_today}_differential.7z"
+            _loggit "Creating DIFFERENTIAL backup to: ${_green}${_differential_backup_filename}${_no_color}"
+            _loggit "---- 7zip START ----" -blue
             # Switch -ms=off: Disable solid mode
             # -t7z = create a 7zip archive
             # -u- existing .7z archive will not be changed.
@@ -280,39 +277,30 @@ for _user_directory in "${_runcloud_users[@]}"; do
             # z1 - If "File in archive is same as the file on disk" then reuse the packed version of the file.
             # w2 - If file size is different then pack the modified file into the archive.
             "${_bin}"/7zz u "${_full_backup_filename}" . -t7z -u- -up0q3r2x2y2z0w2\!"${_differential_backup_filename}" -x@"${_exclude_files_list}"
-
+            _loggit "---- 7zip END ----" -blue
             # if the differental backup file contains no changes delete it
             "${_bin}"/7zz l "${_differential_backup_filename}" >"/tmp/diff_files.txt"
-
             _grep_search=$(grep -F -e"....A" -e"D...." "/tmp/diff_files.txt") || true
             if [ -z "$_grep_search" ]; then
-                _loggit "Nothing new was backed up - deleting differential backup file"
+                _loggit "No changes in this differential backup file - deleting"
                 rm "${_differential_backup_filename}"
             else
-                _loggit "Copying ${_differential_backup_filename} to S3"
+                _loggit "Copying ${_green}${_differential_backup_filename}${_no_color} to S3" -bold
                 # copy it to s3
-                "${_bin}"/mc -no-color cp "${_differential_backup_filename}" "${_target_bucket}"
+                "${_bin}"/mc -no-color cp "${_differential_backup_filename}" "${_target_bucket}/${_app_name}/"
                 #>>"${_logfile_path}/${_logfile_name}"
             fi
         fi
         #remove the sql file
         if [ -f "${_app}/${_siteurl}.sql" ]; then
-            _loggit "deleteing ${_app}/${_siteurl}.sql"
+            _loggit "deleteing temporary Wordpress database dump ${_green}${_app}/${_siteurl}.sql${_no_color}"
             rm "${_app}${_siteurl}.sql"
         fi
     done
 done
-# Sync backups to s3 storage
-# _loggit "Syncing : ${_local_backup_dir}  to ${_target_bucket}"
-# "${_script_dir}"/mc -no-color mirror "${_local_backup_dir}/" "${_target_bucket}" >>"${_logfile_path}/${_logfile_name}"
 
-_loggit "All backup operations complete" -info
-#if you want to delete all local backups
-#rm -rf $BACKUPPATH/*
+# Delete old local backs to conserve diskspace - UNTESTED
+#_loggit "Delete local backups over 31 days old"
+#find ~/rc-backup/backups -type f -mtime +31 -delete
 
-#delete old backups locally over DAYSKEEP days old
-#find "$BACKUPPATH" -type d -mtime +$DAYSKEEP -exec rm -rf {} \;
-
-# calculate days as filename prefix
-#DAYSKEPT=$(date +"%Y-%m-%d" -d "-$DAYSKEEP days")
-#_loggit "${CHECK} Delete backups older than: ${DAYSKEPT}"
+_loggit "All backup operations complete" -blue
