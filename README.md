@@ -40,7 +40,7 @@ Todo:
 - Somewhere to store the backups E.g an S3 compatible bucket
 - Root access to the runcloud server instance *
 
-## Quick install
+## Install
 Visit your S3 backup provider of choice and create a bucket, user and policy. Save the [access-key] and [secret-key]  for use in the next step.
 
 ssh to your runcloud managed server
@@ -85,3 +85,53 @@ Runcloud you probably don't have the root password. You can reset it by loggin
 into DigialOcean, selecting the droplet and chooseing reset root password - it
 will be emailed to your DO regitistered email account and will need to be reset
 upon first login.
+
+# Wasabi - creating a bucket and setting up the user/policy
+
+## Create a bucket
+
+Crate a new bucket for this runcloud server instance to store backups, name it something like: rcuser1-bucket
+
+## Create a policy for the user/bucket combo
+**Policies -> Create Policy**
+
+Name it: rcuser1-limit
+
+Policy: (note the "rcuser1\*" variable!)
+
+```json
+{
+ "Version": "2012-10-17",
+ "Statement": [
+ {
+ "Sid": "ListMy",
+ "Effect": "Allow",
+ "Action": "s3:ListAllMyBuckets",
+ "Resource": "arn:aws:s3:::*"
+ },
+ {
+ "Sid": "AllowAll-S3ActionsToOwnBucket",
+ "Effect": "Allow",
+ "Action": "s3:*",
+ "Resource":"arn:aws:s3:::rcuser1*"
+ }
+ ]
+}
+```
+
+## Create a user for this bucket
+**Users -> Create user**
+
+e.g. rcuser1
+
+Select: Programmatic (create API key)
+
+Next: assign to 'runclud-user-group'
+
+Next: attached policy: rcuser1-limit
+
+Select: Create user
+
+"Create new access keys" will appear
+
+Chose: Copy keys to clipboard and save in password manager
