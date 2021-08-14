@@ -149,6 +149,8 @@ else
     _loggit "Tool: minio client not found in: ${_bin}"
     wget -O "${_bin}/mc" "https://dl.minio.io/client/mc/release/linux-amd64/mc"
     chmod +x "${_bin}/mc"
+    _loggit "Minio client downloaded - now configre your S3 backup and run this script again"
+    exit 1
 fi
 
 hash wp 2>/dev/null || {
