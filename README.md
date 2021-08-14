@@ -68,8 +68,20 @@ crontab -e
 And paste in a schedule (this is for 2am each night)
 `0 2 * * * /bin/bash /root/rc-backup/rc-backup.sh`
 
+# Un-installing
+Delete the schedule from cron
+```bash
+crontab -e
+```
+Delete the rc-backup folder from ~/root
+```bash
+cd /
+rm -rf /root/rc-backup
+```
 
-## Offsite storage
-Use Minio client (single binary) to connect to a S3 compatible stroage and copy in the files, keeping x number of copies. Minio support copy/move/delete operations.
-
-**Note** If you created the server using the DigitalOcean API integration from Runcloud you probably don't have the root password. You can reset it by loggin into DO, selecting the droplet and chooseing reset root password - it will be emailed to your DO regitister email account and will need to be reset upon first login.
+# Notes
+**Note** If you created the server using the DigitalOcean API integration from
+Runcloud you probably don't have the root password. You can reset it by loggin
+into DigialOcean, selecting the droplet and chooseing reset root password - it
+will be emailed to your DO regitistered email account and will need to be reset
+upon first login.
