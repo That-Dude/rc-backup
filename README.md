@@ -99,8 +99,8 @@ rm -rf /root/rc-backup
 
 # Stats
 On a server with 20 Wordpress sites averaging ~150MB each the intitial full
-backup compressed down to ~700MB, with the nigly differential backups incrasing
-in size each day to use apprximately 500MB in total each month.
+backup compressed down to ~700MB, with the nigly differential backups adding
+apprximately 500MB each month.
 
 A Wasabi 1TB bucket costs $6 per month. So that's around 800 backups, or more
 that 2 years of backups before you need to prune your old data.
