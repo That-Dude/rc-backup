@@ -21,7 +21,7 @@ Completed:
 - DIFFERENTIAL backup of each APP as often as you'd like (default nightly)
 - Excellent compression via 7zip
 - Stores LOCAL backup on the server
-- Store OFFSITE backup externally to S3 provider
+- Store OFFSITE backup externally to S3 provider (using Minio client)
 - Easy restores from CLI to the same or a different domain
 - Compatability with static and Wordpress sites
 - Uses static binaries from it's own directory (no server changes)
@@ -29,6 +29,7 @@ Completed:
 - Logging
 - Easy manual restore of files to any server
 - WP restore script included (works on runcloud servers)
+- Optinally excludes files you don't want see ```exclude.lst```
 
 Todo:
 - Allerts via email
@@ -47,7 +48,7 @@ ssh to your runcloud managed server
 ```bash
 ssh root@xxx.xxx.xxx.xxx
 cd /root
-git clone xxxxx
+git clone https://github.com/That-Dude/rc-backup.git
 cd rc-backup
 ```
 
