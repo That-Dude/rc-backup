@@ -42,7 +42,9 @@ Todo:
 - Root access to the runcloud server instance *
 
 ## Install
-Visit your S3 backup provider of choice and create a bucket, user and policy.
+Visit your S3 backup provider of choice and create a bucket [bucket-name], user
+and policy - see futher down for an example using Wasabi.
+
 Save the [access-key] and [secret-key]  for use in the next step.
 
 ssh to your runcloud managed server
@@ -59,8 +61,12 @@ them in the bin directorty.
 
 Configure the minio client to use your S3 bucket:
 ```bash
-bin/mc config host add s3backup https://s3.wasabisys.com [access-key] [secret-key] 
+bin/mc config host add s3backup https://s3.wasabisys.com [access-key] [secret-key]
 ```
+Edit the rc-backup.sh script and change the line:
+```_target_bucket="s3backup/rcuser1-bucket/"``` to the reflect the name of your
+bucket.
+
 Run your first backup to make sure everything works.
 The inital backup will take while depending on the size of your APPs, future
 'differential' backups are quick.

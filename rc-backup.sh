@@ -7,7 +7,7 @@ set -o pipefail # exit if any command in a pipe fails
 #trap 'echo "Error in function $FUNCNAME at line $LINENO"; exit 1' ERR
 
 # *** User variables here ***
-_target_bucket="s3backup/rcuser1-bucket/"
+_target_bucket="s3backup/rcuser2-bucket/"
 
 # *** Constants ***
 _runcloud_user_dir="/home"
