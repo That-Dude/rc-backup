@@ -52,7 +52,7 @@ git clone https://github.com/That-Dude/rc-backup.git
 cd rc-backup
 ```
 
-Setup your s3 bucket with the minio client app:
+Configure the minio client to use your S3 bucket:
 ```bash
 bin/mc config host add s3backup https://s3.wasabisys.com [access-key] [secret-key] 
 ```
