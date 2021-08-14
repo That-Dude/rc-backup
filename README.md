@@ -65,7 +65,7 @@ chmod +x *.sh
 The first time the script is run it will download the static binaries and save
 them in the bin directorty.
 
-Configure the minio client to use your S3 bucket:
+## Configure the minio client to use your S3 bucket:
 ```bash
 bin/mc config host add s3backup https://s3.wasabisys.com [access-key] [secret-key]
 ```
