@@ -1,9 +1,14 @@
 # Runcloud.io rc-backup.sh script
-The state of this software is beta AKA works fine for me using RunCloud servers
+The state of this software is RC1. AKA works fine for me using RunCloud servers
 based on Ubuntu 20.04.2 LTS and the Litespeed stack.
 
 I have not tested it on any other runcloud server options - if you do please
 leave feedback.
+
+Note: My servers only have Wordpress (single not multi-site) and static sites
+to backup - I'm not backing up databases for other options like drupal etc.
+However, it would be trivial to include a full database dump from the whole
+server in the backup if you wanted to do that.
 
 ## Why I made this backup script
 The backup service provided by runcloud is excellent, except:
@@ -34,6 +39,7 @@ Completed:
 Todo:
 - Allerts via email
 - Local and remote pruning of backups, not urgent for me as storage is cheap!
+- Add full server database dump to backup?
 
 ## Pre-requsits
 - runcloud.io account
@@ -90,6 +96,14 @@ Delete the rc-backup folder from ~/root
 cd /
 rm -rf /root/rc-backup
 ```
+
+# Stats
+On a server with 20 Wordpress sites averaging ~150MB each the intitial full
+backup compressed down to ~700MB, with the nigly differential backups incrasing
+in size each day to use apprximately 500MB in total each month.
+
+A Wasabi 1TB bucket costs $6 per month. So that's around 800 backups, or more
+that 2 years of backups before you need to prune your old data.
 
 # Notes
 **Note** If you created the server using the DigitalOcean API integration from
