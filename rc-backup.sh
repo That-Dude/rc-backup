@@ -134,8 +134,8 @@ if [ -f "${_bin}/7zz" ]; then
     chmod +x "${_bin}/7zz"
 else
     _loggit "Tool: 7zz not found in: ${_bin}"
-    _7zip_download_ver="7z2201-linux-x64.tar.xz"
-    wget -O "${_bin}/7z2101-linux-x64.tar.xz" "https://7-zip.org/a/${_7zip_download_ver}"
+    _7zip_download_ver="7z2301-linux-x64.tar.xz"
+    wget -O "${_bin}/7z2301-linux-x64.tar.xz" "https://7-zip.org/a/${_7zip_download_ver}"
     cd "${_bin}"
     tar -xf "${_7zip_download_ver}" 7zz
     rm "${_7zip_download_ver}"
